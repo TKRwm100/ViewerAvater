@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Numerics;
+using System.Windows;
 using TransportX.Avatars;
 using TransportX.Dependency;
 using TransportX.Input;
@@ -52,7 +53,7 @@ namespace TransportX.Plugins.Toukaitetudou.AvaterTest
         float deltaHiRotation = float.Pi / 180f * 0.002f;
         float deltaLowTranslation = 0.1f;
         float deltaLowRotation = float.Pi / 180f * 0.001f;
-        ISettingForm Form;
+        SettingForm? Form;
         public Avater(PluginLoadContext context, AvatarBuilder builder) : base(context, builder)
         {
             Reset();
@@ -60,23 +61,19 @@ namespace TransportX.Plugins.Toukaitetudou.AvaterTest
             BirdViewpoint = new BirdViewpoint(this, new SixDoF(0, 2, -3), 20, new Vector2(0.3f, 0));
             ResetKey = InputManager.ObserveKey(System.Windows.Input.Key.R);
             Inputs = [new KeyboardInput(InputManager)];
-            Form = new SettingForm();
-            Form.Closed += Form_Closed;
-            Form.UpdateToSource += Form_UpdateToSource;
-            Form.ApplyEuler += Form_ApplyEuler;
+            
         }
 
 
         private void Form_Closed(object? sender, EventArgs e)
         {
-            Form = new SettingForm();
-            Form.Closed += Form_Closed;
-            Form.UpdateToSource += Form_UpdateToSource;
-            Form.ApplyEuler += Form_ApplyEuler;
+            Form?.Dispose();
+            Form= null;
         }
 
         private void Form_UpdateToSource(object? sender, EventArgs e)
         {
+            if (Form is null) return;
             int deltaX = GetChunkDelta(Form.TransX.Value);
             int deltaZ = GetChunkDelta(Form.TransZ.Value);
             x = Form.TransX.Value - deltaX * Chunk.Size;
@@ -92,6 +89,7 @@ namespace TransportX.Plugins.Toukaitetudou.AvaterTest
 
         private void Form_ApplyEuler(object? sender, EventArgs e)
         {
+            if(Form is null) return;
             rotate =
                 Quaternion.CreateFromAxisAngle(Vector3.UnitX, Form.RotateX.Value) *
                 Quaternion.CreateFromAxisAngle(Vector3.UnitY, Form.RotateY.Value) *
@@ -125,7 +123,16 @@ namespace TransportX.Plugins.Toukaitetudou.AvaterTest
             }
             if (input.IsOpenForm)
             {
-                Form.Show();
+                if (Form is null)
+                {
+                    Form = new();
+                    Form.Owner = Application.Current.MainWindow;
+                    Form.Closed += Form_Closed;
+                    Form.UpdateToSource += Form_UpdateToSource;
+                    Form.ApplyEuler += Form_ApplyEuler;
+                    Form.Show();
+                }
+                Form.Activate();
             }
             if (input.IsWorld)
             {
@@ -362,14 +369,17 @@ namespace TransportX.Plugins.Toukaitetudou.AvaterTest
             chunkOffset += co;
             x -= co.DeltaX * Chunk.Size;
             z -= co.DeltaZ * Chunk.Size;
-            Form.Update(WorldPose.Pose, chunkOffset);
+            Form?.Update(WorldPose.Pose, chunkOffset);
         }
+
+
         public override void Tick(TimeSpan elapsed)
         {
         }
         public override void Dispose()
         {
-            Form.Close();
+            Form?.Close();
+            Form = null;
             base.Dispose();
         }
     }

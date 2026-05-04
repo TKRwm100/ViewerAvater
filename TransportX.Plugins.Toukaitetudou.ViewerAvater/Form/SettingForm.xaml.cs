@@ -18,7 +18,7 @@ namespace TransportX.Plugins.Toukaitetudou.AvaterTest.Form
     /// <summary>
     /// SettingForm.xaml の相互作用ロジック
     /// </summary>
-    public partial class SettingForm : Window, ISettingForm
+    public partial class SettingForm : Window
     {
         public SettingForm()
         {
@@ -57,5 +57,9 @@ namespace TransportX.Plugins.Toukaitetudou.AvaterTest.Form
         }
 
         public void Update(in Pose pose,in ChunkOffset chunkOffset)=>Model.Update(pose,chunkOffset);
+        public void Dispose()
+        {
+            Model.Dispose();
+        }
     }
 }

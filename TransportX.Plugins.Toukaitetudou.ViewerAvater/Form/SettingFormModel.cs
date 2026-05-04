@@ -5,7 +5,7 @@ using TransportX.Spatial;
 
 namespace TransportX.Plugins.Toukaitetudou.AvaterTest.Form
 {
-    public class SettingFormModel
+    public class SettingFormModel:IDisposable
     {
         class ActionCommand : ICommand
         {
@@ -84,6 +84,20 @@ namespace TransportX.Plugins.Toukaitetudou.AvaterTest.Form
             QuatZ.Value = pose.Orientation.Z;
             QuatW.Value = pose.Orientation.W;
             isChangeFromForm = true;
+        }
+
+        public void Dispose()
+        {
+            TransX.Dispose();
+            TransY.Dispose();
+            TransZ.Dispose();
+            QuatX.Dispose();
+            QuatY.Dispose();
+            QuatZ.Dispose();
+            QuatW.Dispose();
+            RotateX.Dispose();
+            RotateY.Dispose();
+            RotateZ.Dispose();
         }
     }
 }
